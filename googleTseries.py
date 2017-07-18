@@ -40,7 +40,10 @@ class googleTseries:
         self.tickers.append(ticker)
 
     def supprimerTicker(self, ticker):
-        self.tickers.remove(ticker)
+        if ticker in self.tickers:
+            self.tickers.remove(ticker)
+        else:
+            print("Ce ticker n'est pas dans votre liste")
 
     def googleImport(self, ticker):
         df = web.DataReader(ticker, "google", self.__start, self.__end)
