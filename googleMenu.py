@@ -27,16 +27,28 @@ class googleMenu():
                 return self.googleMainMenu()
 
             elif optionGoogle == 'B':
-                pass
+                print("""
+                Option non-disponible pour le moment
+                """)
+                return self.googleMainMenu()
 
             elif optionGoogle == 'C':
-                pass
+                print("""
+                Option non-disponible pour le moment
+                """)
+                return self.googleMainMenu()
 
             elif optionGoogle == 'D':
-                pass
+                print("""
+                Option non-disponible pour le moment
+                """)
+                return self.googleMainMenu()
 
             elif optionGoogle == 'R':
-                return self.menuTS()
+                print("""
+                Option non-disponible pour le moment
+                """)
+                return self.googleMainMenu()
 
             elif optionGoogle == 'Q':
                 sys.exit()
