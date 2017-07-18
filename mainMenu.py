@@ -1,5 +1,4 @@
 import sys
-from googleTseries import googleTseries
 from googleMenu import googleMenu
 
 
@@ -8,7 +7,7 @@ class mainMenu():
     def __init__(self):
         pass
 
-    def mainMenu(self):
+    def createMenu(self):
 
         print("""
         A-États financiers
@@ -39,7 +38,7 @@ class mainMenu():
         print("""
         Option non-disponible pour le moment
         """)
-        return self.mainMenu()
+        return self.createMenu()
 
     def menuTS(self):
         print("""
@@ -71,7 +70,7 @@ class mainMenu():
                 return self.importExcel()
 
             elif optionTS == 'R':
-                return self.mainMenu()
+                return self.createMenu()
 
             elif optionTS == 'Q':
                 sys.exit()
@@ -89,8 +88,9 @@ class mainMenu():
                 optionTS = str.upper(input("Quelle option choisissez-vous?"))
 
     def importGoogle(self):
-        menu = googleMenu()
-        menu.googleMainMenu()
+        gMenu = googleMenu()
+        gMenu.createGoogleMenu()
+        return self.menuTS()
 
     def importYahoo(self):
         print("""
@@ -119,4 +119,4 @@ class mainMenu():
 
 if __name__ == '__main__':
     menu = mainMenu()
-    menu.mainMenu()
+    menu.createMenu()
