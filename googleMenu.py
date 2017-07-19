@@ -1,5 +1,6 @@
 import sys
 from googleTseries import googleTseries
+import pickle
 
 
 class googleMenu():
@@ -39,15 +40,11 @@ class googleMenu():
                 return self.createGoogleMenu()
 
             elif optionGoogle == 'D':
-                print("""
-                Option non-disponible pour le moment
-                """)
+                self.loadFromPickle()
                 return self.createGoogleMenu()
 
             elif optionGoogle == 'E':
-                print("""
-                Option non-disponible pour le moment
-                """)
+                self.saveToPickle()
                 return self.createGoogleMenu()
 
             elif optionGoogle == 'F':
@@ -71,6 +68,7 @@ class googleMenu():
                 Q-Quitter
                 """)
                 optionGoogle = str.upper(input("Quelle option choisissez-vous?"))
+
 
     def workMenu(self):
         print("""
@@ -121,3 +119,14 @@ class googleMenu():
 
             if optionWork == 'Q':
                 sys.exit()
+
+    def saveToPickle(self):
+        pickle_out = open('GTSeries.pickle', 'wb')
+        pickle.dump(self.googleSeries, pickle_out)
+        pickle_out.close()
+        print('workspace sauvegardé')
+
+    def loadFromPickle(self):
+        pickle_in = open('GTSeries.pickle', 'rb')
+        self.googleSeries = pickle.load(pickle_in)
+        print('workspace chargé depuis le pickle')

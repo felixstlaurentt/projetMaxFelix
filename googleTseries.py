@@ -1,6 +1,7 @@
 import pandas as pd
 import pandas_datareader.data as web
 import datetime as dt
+import pickle
 
 
 class googleTseries:
@@ -48,6 +49,7 @@ class googleTseries:
     def googleImport(self, ticker):
         df = web.DataReader(ticker, "google", self.__start, self.__end)
         return df
+
 
 if __name__ == '__main__':
     j = googleTseries()
