@@ -81,7 +81,7 @@ class mainMenu():
                 return self.createMenu()
 
             elif optionTS == 'Q':
-                sys.exit()
+                return sys.exit()
 
             else:
                 return self.menuTS()

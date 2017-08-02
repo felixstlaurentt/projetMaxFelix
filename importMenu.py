@@ -3,6 +3,7 @@ from tSeries import tSeries
 import pickle
 import datetime as dt
 import pandas_datareader as web
+import pandas as pd
 
 """
 Classe qui constitue le menu pour les importations
@@ -92,8 +93,8 @@ class importMenu():
             elif optionGoogle == 'B':
                 liste = str(input('Quelle liste voulez-vous importer en CSV?'))
                 if liste in self.googleLists:
-                    self.currentList = liste
-                    self.createCSV()
+                    self.currentList = self.googleLists[liste]
+                    return self.createCSV()
                 else:
                     print("La liste demandé n'existe pas")
                     return self.createGoogleMenu()
@@ -107,7 +108,7 @@ class importMenu():
                 return self.createGoogleMenu()
 
             elif optionGoogle == 'R':
-                return 0
+                return self.createImportMenu()
 
             elif optionGoogle == 'Q':
                 return sys.exit()
@@ -136,20 +137,20 @@ class importMenu():
 
             if optionList == 'A':
                 self.addTicker()
-                return self.createGoogleMenu()
+                return self.createGoogleList()
 
             elif optionList == 'B':
                 self.deleteTicker()
-                return self.createGoogleMenu()
+                return self.createGoogleList()
 
             elif optionList == 'C':
                 name = str(input('Quel nom voulez-vous donner à votre liste?'))
                 self.googleLists[name] = self.newList
                 self.saveToPickle()
-                return self.createGoogleMenu()
+                return self.createGoogleList()
 
             elif optionList == 'R':
-                return 0
+                return self.createGoogleMenu()
 
             elif optionList == 'Q':
                 return sys.exit()
@@ -189,7 +190,7 @@ class importMenu():
                 self.importData()
 
             elif optionCSV == 'R':
-                return 0
+                return self.createGoogleMenu()
 
             elif optionCSV == 'Q':
                 return sys.exit()
@@ -238,7 +239,7 @@ class importMenu():
                 return self.createCSV()
 
             elif optionBench == 'R':
-                return 0
+                return self.createCSV()
 
             elif optionBench == 'Q':
                 return sys.exit()
@@ -359,7 +360,8 @@ class importMenu():
 
         :return:
         """
-        tickerList = ['NASDAQ:GOOGL', 'NASDAQ:AAPL', 'NYSE:F', 'NYSE:BAC', 'NASDAQ:MSFT']
+        tickerList = self.currentList
+        print(tickerList)
         dataList = ['Open', 'High', 'Low', 'Close', 'Volume']
 
         start = dt.datetime(2000, 1, 1)
