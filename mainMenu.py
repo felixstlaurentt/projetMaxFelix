@@ -1,5 +1,6 @@
 import sys
 from importMenu import importMenu
+from seriesAnalysisMenu import seriesAnalysisMenu
 """
 Classe qui constitue le menu principal
 
@@ -29,18 +30,17 @@ class mainMenu():
         """)
         optionMain = str.upper(input("Quelle option choisissez-vous?"))
 
-        while optionMain != 'Q':
+        if optionMain == 'A':
+            return self.menuEF()
 
-            if optionMain == 'A':
-                return self.menuEF()
+        elif optionMain == 'B':
+            return self.menuTS()
 
-            elif optionMain == 'B':
-                return self.menuTS()
+        elif optionMain == 'Q':
+            return sys.exit()
 
-            elif optionMain == 'Q':
-                sys.exit()
-            else:
-                return self.createMenu()
+        else:
+            return self.createMenu()
 
     def menuEF(self):
         """
@@ -69,22 +69,20 @@ class mainMenu():
         """)
         optionTS = str.upper(input("Quelle option choisissez-vous?"))
 
-        while optionTS != 'Q':
+        if optionTS == 'A':
+            return self.createCsv()
 
-            if optionTS == 'A':
-                return self.createCsv()
+        elif optionTS == 'B':
+            return self.workCsv()
 
-            elif optionTS == 'B':
-                return self.workCsv()
+        elif optionTS == 'R':
+            return self.createMenu()
 
-            elif optionTS == 'R':
-                return self.createMenu()
+        elif optionTS == 'Q':
+            return sys.exit()
 
-            elif optionTS == 'Q':
-                return sys.exit()
-
-            else:
-                return self.menuTS()
+        else:
+            return self.menuTS()
 
     def createCsv(self):
         """
@@ -102,9 +100,8 @@ class mainMenu():
 
         :return:
         """
-        print("""
-        Option non-disponible pour le moment
-        """)
+        wMenu = seriesAnalysisMenu()
+        wMenu.createAnalysisMenu()
         return self.menuTS()
 
 

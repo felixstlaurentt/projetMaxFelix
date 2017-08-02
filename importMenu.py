@@ -29,7 +29,6 @@ class importMenu():
         self.currentList = []
         self.googleLists = {}
         self.quandlLists = {}
-        self.benchmark = 'None'
         self.__start = dt.datetime(2000, 1, 1)
         self.__end = dt.datetime(2017, 1, 2)
         try:
@@ -51,22 +50,20 @@ class importMenu():
         """)
         optionImport = str.upper(input("Quelle option choisissez-vous?"))
 
-        while optionImport != 'Q':
+        if optionImport == 'A':
+            return self.createGoogleMenu()
 
-            if optionImport == 'A':
-                return self.createGoogleMenu()
+        elif optionImport == 'B':
+            return self.createQuandlMenu()
 
-            elif optionImport == 'B':
-                return self.createQuandlMenu()
+        elif optionImport == 'R':
+            return 0
 
-            elif optionImport == 'R':
-                return 0
+        elif optionImport == 'Q':
+            return sys.exit()
 
-            elif optionImport == 'Q':
-                return sys.exit()
-
-            else:
-                return self.createImportMenu()
+        else:
+            return self.createImportMenu()
 
     def createGoogleMenu(self):
         """
@@ -84,37 +81,36 @@ class importMenu():
         """)
         optionGoogle = str.upper(input('Quelle option choisissez-vous?'))
 
-        while optionGoogle != 'Q':
+        if optionGoogle == 'A':
+            self.newList = []
+            return self.createGoogleList()
 
-            if optionGoogle == 'A':
-                self.newList = []
-                return self.createGoogleList()
-
-            elif optionGoogle == 'B':
-                liste = str(input('Quelle liste voulez-vous importer en CSV?'))
-                if liste in self.googleLists:
-                    self.currentList = self.googleLists[liste]
-                    return self.createCSV()
-                else:
-                    print("La liste demandé n'existe pas")
-                    return self.createGoogleMenu()
-
-            elif optionGoogle == 'C':
-                print(self.googleLists)
-                return self.createGoogleMenu()
-
-            elif optionGoogle == 'D':
-                self.deleteGoogleList()
-                return self.createGoogleMenu()
-
-            elif optionGoogle == 'R':
-                return self.createImportMenu()
-
-            elif optionGoogle == 'Q':
-                return sys.exit()
-
+        elif optionGoogle == 'B':
+            print(self.googleLists)
+            liste = str(input('Quelle liste voulez-vous importer en CSV?'))
+            if liste in self.googleLists:
+                self.currentList = self.googleLists[liste]
+                return self.createCSV()
             else:
+                print("La liste demandé n'existe pas")
                 return self.createGoogleMenu()
+
+        elif optionGoogle == 'C':
+            print(self.googleLists)
+            return self.createGoogleMenu()
+
+        elif optionGoogle == 'D':
+            self.deleteGoogleList()
+            return self.createGoogleMenu()
+
+        elif optionGoogle == 'R':
+            return self.createImportMenu()
+
+        elif optionGoogle == 'Q':
+            return sys.exit()
+
+        else:
+            return self.createGoogleMenu()
 
     def createGoogleList(self):
         """
@@ -127,36 +123,39 @@ class importMenu():
         print("""
         A-Ajouter un ticker à la liste
         B-Supprimer un ticker de la liste
-        C-Sauvegarder la liste
+        C-Ajouter une liste complète
+        D-Sauvegarder la liste
         R-Revenir en arrière
         Q-Quitter
         """)
         optionList = str.upper(input('Quelle option choisissez-vous?'))
 
-        while optionList != 'Q':
+        if optionList == 'A':
+            self.addTicker()
+            return self.createGoogleList()
 
-            if optionList == 'A':
-                self.addTicker()
-                return self.createGoogleList()
+        elif optionList == 'B':
+            self.deleteTicker()
+            return self.createGoogleList()
 
-            elif optionList == 'B':
-                self.deleteTicker()
-                return self.createGoogleList()
+        elif optionList == 'C':
+            self.addList()
+            return self.createGoogleList()
 
-            elif optionList == 'C':
-                name = str(input('Quel nom voulez-vous donner à votre liste?'))
-                self.googleLists[name] = self.newList
-                self.saveToPickle()
-                return self.createGoogleList()
+        elif optionList == 'D':
+            name = str(input('Quel nom voulez-vous donner à votre liste?'))
+            self.googleLists[name] = self.newList
+            self.saveToPickle()
+            return self.createGoogleList()
 
-            elif optionList == 'R':
-                return self.createGoogleMenu()
+        elif optionList == 'R':
+            return self.createGoogleMenu()
 
-            elif optionList == 'Q':
-                return sys.exit()
+        elif optionList == 'Q':
+            return sys.exit()
 
-            else:
-                return self.createGoogleList()
+        else:
+            return self.createGoogleList()
 
     def createCSV(self):
         """
@@ -166,87 +165,30 @@ class importMenu():
         :return: inconnu
         """
 
-        print('benchmark: ', self.benchmark)
         print('date de début: ', self.__start)
         print('date de fin: ', self.__end)
         print("""
-        A-Modifier benchmark
-        B-Modifier les dates
-        C-Importer les données dans un csv
+        A-Modifier les dates
+        B-Importer les données dans un csv
         R-Revenir en arrière
         Q-Quitter
         """)
         optionCSV = str.upper(input('Quelle option choisissez-vous?'))
 
-        while optionCSV != 'Q':
+        if optionCSV == 'A':
+            return self.modifyDatesMenu()
 
-            if optionCSV == 'A':
-                self.modifyBenchmark()
+        elif optionCSV == 'B':
+            return self.importData()
 
-            elif optionCSV == 'B':
-                self.modifyDatesMenu()
+        elif optionCSV == 'R':
+            return self.createGoogleMenu()
 
-            elif optionCSV == 'C':
-                self.importData()
+        elif optionCSV == 'Q':
+            return sys.exit()
 
-            elif optionCSV == 'R':
-                return self.createGoogleMenu()
-
-            elif optionCSV == 'Q':
-                return sys.exit()
-
-            else:
-                return self.createCSV()
-
-    def modifyBenchmark(self):
-        """
-        Fonction qui créer le menu pour modifier le benchmark
-
-        :return: lui-même, self.createCSV (Quand le benchmark a été modifié avec succès, 0 (pour revenir en arrière) ou sys.exit (pour quitter)
-        """
-        print('benchmark: ', self.benchmark)
-        print("""
-        A-SP500
-        B-TSX composite
-        C-None
-        D-Autre
-        R-Revenir en arrière
-        Q-Quitter
-        """)
-        optionBench = str.upper(input('Quel benchmark voulez-vous?'))
-
-        while optionBench != 'Q':
-
-            if optionBench == 'A':
-                self.benchmark = 'NYSEARCA:SPY'
-                self.saveToPickle()
-                return self.createCSV()
-
-            elif optionBench == 'B':
-                self.benchmark = 'INDEXTSI:OSPTX'
-                self.saveToPickle()
-                return self.createCSV()
-
-            elif optionBench == 'C':
-                self.benchmark = 'None'
-                self.saveToPickle()
-                return self.createCSV()
-
-            elif optionBench == 'D':
-                newBench = str.upper(input('Entrez le ticker exact google finance que vous voulez utiliser comme benchmark'))
-                self.benchmark = newBench
-                self.saveToPickle()
-                return self.createCSV()
-
-            elif optionBench == 'R':
-                return self.createCSV()
-
-            elif optionBench == 'Q':
-                return sys.exit()
-
-            else:
-                return self.modifyBenchmark()
-
+        else:
+            return self.createCSV()
 
     def modifyDatesMenu(self):
         """
@@ -264,24 +206,22 @@ class importMenu():
         """)
         optionMod = str.upper(input('Quelle option choisissez-vous?'))
 
-        while optionMod != 'Q':
+        if optionMod == 'A':
+            self.modifyStartDate()
+            return self.modifyDatesMenu()
 
-            if optionMod == 'A':
-                self.modifyStartDate()
-                return self.modifyDatesMenu()
+        elif optionMod == 'B':
+            self.modifyEndDate()
+            return self.modifyDatesMenu()
 
-            elif optionMod == 'B':
-                self.modifyEndDate()
-                return self.modifyDatesMenu()
+        elif optionMod == 'R':
+            return self.createCSV()
 
-            elif optionMod == 'R':
-                return self.createCSV()
+        elif optionMod == 'Q':
+            return sys.exit()
 
-            elif optionMod == 'Q':
-                return sys.exit()
-
-            else:
-                return self.modifyDatesMenu()
+        else:
+            return self.modifyDatesMenu()
 
     def modifyStartDate(self):
         """
@@ -358,20 +298,17 @@ class importMenu():
         """
         Fonction qui va importer les données dans un fichier csv
 
-        :return:
+        :return: self.createImportMenu
         """
         tickerList = self.currentList
         print(tickerList)
         dataList = ['Open', 'High', 'Low', 'Close', 'Volume']
 
-        start = dt.datetime(2000, 1, 1)
-        end = dt.datetime(2017, 7, 31)
-
         df_main = pd.DataFrame()
 
         for ticker in tickerList:
             try:
-                df = web.DataReader(ticker, "google", start, end)
+                df = web.DataReader(ticker, "google", self.__start, self.__end)
                 df.fillna(0, inplace=True)
             except:
                 print("Le ticker ", ticker, "n'a pas fonctionné")
@@ -399,6 +336,7 @@ class importMenu():
 
         csvName = str(input("Quel nom voulez-vous donner à votre fichier csv? (ne pas mettre l'extension)"))
         df_main.to_csv(csvName + '.csv')
+
         return self.createImportMenu()
 
 
@@ -444,6 +382,31 @@ class importMenu():
             self.newList.remove(delTicker)
         else:
             print("Ce ticker n'est pas dans votre liste")
+
+    def addList(self):
+        """
+        Fonction pour ajouter une liste complète à notre liste
+
+        :return: Void
+        """
+        liste = list(input('Entrez votre liste: '))
+
+        open = False
+        newTick = ''
+        newList = []
+        for caracter in liste:
+            if open == False and caracter == "'":
+                open = True
+                continue
+            if open == True:
+                if caracter != "'":
+                    newTick += caracter
+                else:
+                    open = False
+                    newList.append(newTick)
+                    newTick = ''
+        for ticker in newList:
+            self.newList.append(ticker)
 
     def createQuandlMenu(self):
         """
