@@ -1,5 +1,5 @@
 import sys
-from googleMenu import googleMenu
+from importMenu import importMenu
 
 
 class mainMenu():
@@ -42,11 +42,8 @@ class mainMenu():
 
     def menuTS(self):
         print("""
-        A-Importer via Google finance
-        B-Importer via Yahoo finance
-        C-Importer via Quandl
-        D-Importer fichier csv
-        E-Importer fichier excel
+        A-Créer un fichier csv
+        B-Travailler sur un fichier csv
         R-Revenir en arrière
         Q-Quitter
         """)
@@ -55,19 +52,10 @@ class mainMenu():
         while optionTS != 'Q':
 
             if optionTS == 'A':
-                return self.importGoogle()
+                return self.createCsv()
 
             elif optionTS == 'B':
-                return self.importYahoo()
-
-            elif optionTS == 'C':
-                return self.importQuandl()
-
-            elif optionTS == 'D':
-                return self.importCsv()
-
-            elif optionTS == 'E':
-                return self.importExcel()
+                return self.workCsv()
 
             elif optionTS == 'R':
                 return self.createMenu()
@@ -77,40 +65,19 @@ class mainMenu():
 
             else:
                 print("""
-                A-Importer via Google finance
-                B-Importer via Yahoo finance
-                C-Importer via Quandl
-                D-Importer fichier csv
-                E-Importer fichier excel
+                A-Créer un fichier csv
+                B-Travailler sur un fichier csv
                 R-Revenir en arrière
                 Q-Quitter
                 """)
                 optionTS = str.upper(input("Quelle option choisissez-vous?"))
 
-    def importGoogle(self):
-        gMenu = googleMenu()
-        gMenu.createGoogleMenu()
+    def createCsv(self):
+        iMenu = importMenu()
+        iMenu.createImportMenu()
         return self.menuTS()
 
-    def importYahoo(self):
-        print("""
-        Option non-disponible pour le moment
-        """)
-        return self.menuTS()
-
-    def importQuandl(self):
-        print("""
-        Option non-disponible pour le moment
-        """)
-        return self.menuTS()
-
-    def importCsv(self):
-        print("""
-        Option non-disponible pour le moment
-        """)
-        return self.menuTS()
-
-    def importExcel(self):
+    def workCsv(self):
         print("""
         Option non-disponible pour le moment
         """)
