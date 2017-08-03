@@ -46,6 +46,7 @@ print(data_frame.head())
 
 liste = list(data_frame)
 ticker2 = liste[0].split('_')[0]
+
 for item in liste:
     ticker1 = item.split('_')[0]
     data = item.split('_')[1]
@@ -62,6 +63,8 @@ for item in liste:
         new_df = new_df.join(data_frame[item])
         new_df.rename(columns={item: data}, inplace=True)
 
+buffer_series = tSeries(new_df)
+dictio[ticker2] = buffer_series
 print(dictio)
 
 # dictio = {}
@@ -82,3 +85,6 @@ print(dictio)
 # data = item.split('_')[1]
 # new_df.rename(columns={item: data}, inplace=True)
 # print(new_df.head())
+
+test = pd.DataFrame()
+print(type(test))

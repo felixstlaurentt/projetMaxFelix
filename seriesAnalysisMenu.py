@@ -19,7 +19,7 @@ class seriesAnalysisMenu():
         """
         Constructeur de la classe seriesAnalysisMenu
         """
-        self.csvFile = ''
+        self.csvFile = pd.DataFrame()
         self.benchmark = False
         self.seriesList = {}
         self.seriesDictionary = {}
@@ -29,6 +29,7 @@ class seriesAnalysisMenu():
         print("""
         A-Travailler avec un csv provenant de google finance
         B-Travailler avec un csv provenant de bloomberg
+        C-Imprimer Tests
         R-Revenir en arrière
         Q-Quitter
         """)
@@ -39,6 +40,9 @@ class seriesAnalysisMenu():
 
         elif optionMenu == 'B':
             return self.createBloomMenu()
+
+        elif optionMenu == 'C':
+            return self.printTest()
 
         elif optionMenu == 'R':
             return 0
@@ -58,8 +62,7 @@ class seriesAnalysisMenu():
         newCSV = str(input("Entrez le nom du fichier csv que vous voulez utiliser (incluant l'extension): "))
 
         try:
-            df_first = pd.read_csv(newCSV)
-            self.csvFile = newCSV
+            self.csvFile = pd.read_csv(newCSV)
             print('Le fichier à été chargé avec succès')
         except:
             print("Le fichier n'a pas pu se charger")
@@ -77,13 +80,65 @@ class seriesAnalysisMenu():
         while optionReady != 'O' or optionReady != 'N':
             optionReady = str.upper(input("Tout est prêt. Passer aux calculs? (O pour oui, N pour non) "))
             if optionReady == 'O':
-                return self.formatAndCalculate()
+                return self.format()
             if optionReady == 'N':
                 return self.createAnalysisMenu()
 
-    def formatAndCalculate(self):
-        self.createAnalysisMenu()
+    def format(self):
+        """
+        Fonction qui va formater le csv pour créer un tSeries pour chaque ticker qu'il contient et lui insérer leur propre DataFrame dans chaque objet
+
+        :return: self.createAnalysisMenu
+        """
+        self.seriesDictionary = {}
+        buffer_df = pd.DataFrame(self.csvFile['Date'])
+        new_df = pd.DataFrame(buffer_df)
+        new_df.set_index('Date', inplace=True)
+        self.csvFile.set_index('Date', inplace=True)
+
+        liste = list(self.csvFile)
+        ticker2 = liste[0].split('_')[0]
+
+        for item in liste:
+            ticker1 = item.split('_')[0]
+            data = item.split('_')[1]
+
+            if ticker1 == ticker2:
+                buffer_item = pd.DataFrame(self.csvFile[item])
+                new_df = new_df.join(buffer_item, how='outer')
+                new_df.rename(columns={item: data}, inplace=True)
+                print(new_df.head())
+            else:
+                buffer_series = tSeries(new_df)
+                self.seriesDictionary[ticker2] = buffer_series
+                ticker2 = ticker1
+                new_df = buffer_df
+                new_df = new_df.join(self.csvFile[item])
+                new_df.rename(columns={item: data}, inplace=True)
+
+        buffer_series = tSeries(new_df)
+        self.seriesDictionary[ticker2] = buffer_series
+
+        return self.createAnalysisMenu()
 
     def createBloomMenu(self):
-        print('Option non-disponible pour le moment')
+        """
+        Fonction qui créer le menu pour travailler sur un csv qui provient de bloomberg
+
+        :return: self.createAnalysisMenu
+        """
+        print("""
+        Option non-disponible pour le moment
+        """)
+        return self.createAnalysisMenu()
+
+    def printTest(self):
+        """
+        Fonction qui imprime certains test dans la console pour s'assurer que tout est beau
+
+        :return: self.createAnalysisMenu
+        """
+        for item in self.seriesDictionary:
+            print(item)
+
         return self.createAnalysisMenu()
