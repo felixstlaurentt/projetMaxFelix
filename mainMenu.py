@@ -17,6 +17,12 @@ class mainMenu():
         """
         pass
 
+########################################################################################################################
+#                                                                                                                      #
+#                                       MENU PRINCIPAUX                                                                #
+#                                                                                                                      #
+########################################################################################################################
+
     def createMenu(self):
         """
         Fonction qui crée le tout premier menu
@@ -26,6 +32,10 @@ class mainMenu():
         print("""
         A-États financiers
         B-Séries temporelles
+        C-Live data
+        D-Simulation de Montecarlo
+        E-Produits dérivés
+        F-Obligations
         Q-Quitter le programme
         """)
         optionMain = str.upper(input("Quelle option choisissez-vous?"))
@@ -35,6 +45,18 @@ class mainMenu():
 
         elif optionMain == 'B':
             return self.menuTS()
+
+        elif optionMain == 'C':
+            return self.menuLive()
+
+        elif optionMain == 'D':
+            return self.menuMontecarlo()
+
+        elif optionMain == 'E':
+            return self.menuDerivatives()
+
+        elif optionMain == 'F':
+            return self.menuObligations()
 
         elif optionMain == 'Q':
             return sys.exit()
@@ -84,11 +106,61 @@ class mainMenu():
         else:
             return self.menuTS()
 
+    def menuLive(self):
+        """
+        Fonction qui ouvre le menu pour les live datas
+
+        :return: self.createMenu (menu principal)
+        """
+        print("""
+        Option non-disponible pour le moment
+        """)
+        return self.createMenu()
+
+    def menuMontecarlo(self):
+        """
+        Fonction qui ouvre le menu pour les simulations de montecarlo
+
+        :return: self.createMenu (menu principal)
+        """
+        print("""
+        Option non-disponible pour le moment
+        """)
+        return self.createMenu()
+
+    def menuDerivatives(self):
+        """
+        Fonction qui ouvre le menu pour les produits dérivés
+
+        :return: self.createMenu (menu principal)
+        """
+        print("""
+        Option non-disponible pour le moment
+        """)
+        return self.createMenu()
+
+    def menuObligations(self):
+        """
+        Fonction qui ouvre le menu pour les obligations
+
+        :return: self.createMenu (menu principal)
+        """
+        print("""
+        Option non-disponible pour le moment
+        """)
+        return self.createMenu()
+
+########################################################################################################################
+#                                                                                                                      #
+#                                          MENU SECONDAIRES                                                            #
+#                                                                                                                      #
+########################################################################################################################
+
     def createCsv(self):
         """
         Fonction qui ouvre la classe menu pour les options d'importations web
 
-        :return: soi-même, après avoir ouvert le menu suivant
+        :return: self.menuTs, après avoir ouvert le menu suivant
         """
         iMenu = importMenu()
         iMenu.createImportMenu()
@@ -98,7 +170,7 @@ class mainMenu():
         """
         Fonction qui ouvre les menu pour travailler sur nos time series
 
-        :return:
+        :return: self.menuTs
         """
         wMenu = seriesAnalysisMenu()
         wMenu.createAnalysisMenu()

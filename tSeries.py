@@ -27,7 +27,7 @@ class tSeries:
         :param benchmark: numpy array du benchmark
         """
 
-        self.frame = frame
+        self.frame = pd.DataFrame(frame)
         try:
             self.frame.set_index('Date', inplace=True)
         except:
