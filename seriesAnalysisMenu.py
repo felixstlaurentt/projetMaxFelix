@@ -2,6 +2,7 @@ from tSeries import tSeries
 import sys
 import numpy as np
 import pandas as pd
+import pickle
 
 """
 Classe qui va ouvrir le menu pour les analyses de données temporelles
@@ -19,13 +20,25 @@ class seriesAnalysisMenu():
         """
         Constructeur de la classe seriesAnalysisMenu
         """
+        self.csvName = ''
         self.csvFile = pd.DataFrame()
         self.benchmark = False
-        self.seriesList = {}
+        self.seriesList = []
         self.seriesDictionary = {}
         self.corrMatrix = np.array([])
 
+        try:
+            self.loadFromPickle()
+        except:
+            print('new')
+
     def createAnalysisMenu(self):
+        """
+        Fonction qui créer le menu principal pour les time series
+
+        :return: createGFinMenu, createBloomMenu, printTest, 0, sys.exit
+        """
+        print('Fichier en cours: ', self.csvName)
         print("""
         A-Travailler avec un csv provenant de google finance
         B-Travailler avec un csv provenant de bloomberg
@@ -64,6 +77,7 @@ class seriesAnalysisMenu():
         try:
             self.csvFile = pd.read_csv(newCSV)
             print('Le fichier à été chargé avec succès')
+            self.csvName = newCSV
         except:
             print("Le fichier n'a pas pu se charger")
             return self.createAnalysisMenu()
@@ -80,7 +94,9 @@ class seriesAnalysisMenu():
         while optionReady != 'O' or optionReady != 'N':
             optionReady = str.upper(input("Tout est prêt. Passer aux calculs? (O pour oui, N pour non) "))
             if optionReady == 'O':
-                return self.format()
+                self.format()
+                self.calcStats()
+                return self.createAnalysisMenu()
             if optionReady == 'N':
                 return self.createAnalysisMenu()
 
@@ -88,7 +104,7 @@ class seriesAnalysisMenu():
         """
         Fonction qui va formater le csv pour créer un tSeries pour chaque ticker qu'il contient et lui insérer leur propre DataFrame dans chaque objet
 
-        :return: self.createAnalysisMenu
+        :return: Void
         """
         self.seriesDictionary = {}
         buffer_df = pd.DataFrame(self.csvFile['Date'])
@@ -109,17 +125,28 @@ class seriesAnalysisMenu():
                 new_df.rename(columns={item: data}, inplace=True)
                 print(new_df.head())
             else:
-                buffer_series = tSeries(new_df)
-                self.seriesDictionary[ticker2] = buffer_series
+                self.seriesList.append(ticker2)
+                self.seriesDictionary[ticker2] = tSeries(new_df)
                 ticker2 = ticker1
-                new_df = buffer_df
+                new_df = pd.DataFrame(buffer_df)
                 new_df = new_df.join(self.csvFile[item])
                 new_df.rename(columns={item: data}, inplace=True)
 
-        buffer_series = tSeries(new_df)
-        self.seriesDictionary[ticker2] = buffer_series
+        self.seriesList.append(ticker2)
+        self.seriesDictionary[ticker2] = tSeries(new_df)
 
-        return self.createAnalysisMenu()
+        for ticker in self.seriesList:
+            if self.benchmark:
+                self.seriesDictionary[ticker].benchmark = np.array(self.seriesDictionary[self.seriesList[0]].close)
+
+    def calcStats(self):
+        """
+        Fonction qui calcules les statistiques de chaque ticker et ceux du portfolio
+
+        :return: Void
+        """
+        for ticker in self.seriesList:
+            self.seriesDictionary[ticker].calcStats()
 
     def createBloomMenu(self):
         """
@@ -138,7 +165,39 @@ class seriesAnalysisMenu():
 
         :return: self.createAnalysisMenu
         """
-        for item in self.seriesDictionary:
-            print(item)
+        for ticker in self.seriesList:
+            print(ticker)
+            print('close: ', self.seriesDictionary[ticker].frame.head())
+            print('bench: ', self.seriesDictionary[ticker].benchmark)
+            print('Std: ', self.seriesDictionary[ticker].std)
+            print('beta: ', self.seriesDictionary[ticker].beta)
+
+        print(self.seriesList)
 
         return self.createAnalysisMenu()
+
+    def saveToPickle(self):
+        """
+        Fonction qui sauvegarde l'objet seriesAnalysisMenu en entier. Ce qui sauvegarde toutes les données même si l'on ferme le programme
+
+        :return: Void
+        """
+        pickle_out = open('seriesAnalysisMenu.pickle', 'wb')
+        pickle.dump(self, pickle_out)
+        pickle_out.close()
+        print('workspace sauvegardé')
+
+    def loadFromPickle(self):
+        """
+        Fonction qui remet en place l'objet seriesAnalysisMenu à l'état ou il se trouvait à la dernière sauvegarde
+
+        :return: Void
+        """
+        pickle_in = open('seriesAnalysisMenu.pickle', 'rb')
+        buffer = pickle.load(pickle_in)
+        self.csvName = buffer.csvName
+        self.csvFile = buffer.csvFile
+        self.benchmark = buffer.benchMark
+        self.seriesList = buffer.seriesList
+        self.seriesDictionary = buffer.seriesDictionary
+        self.corrMatrix = buffer.corrMatrix

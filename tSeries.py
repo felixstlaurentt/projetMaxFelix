@@ -1,5 +1,4 @@
 import pandas as pd
-import pandas_datareader.data as web
 import datetime as dt
 import pickle
 import numpy as np
@@ -19,7 +18,7 @@ Attributes:
 """
 class tSeries:
 
-    def __init__(self, frame, benchmark=np.array([])):
+    def __init__(self, frame):
         """
         Constructeur de la classe tSeries
 
@@ -31,38 +30,26 @@ class tSeries:
         try:
             self.frame.set_index('Date', inplace=True)
         except:
-            print("Erreur dans l'attribution de l'index date")
+            print('')
+        self.frame.replace(0, np.nan, inplace=True)
+        self.frame.dropna(axis=0, how='all', inplace=True)
 
-        self.benchmark = benchmark
+        self.rend = pd.DataFrame()
+        self.meanRend = 0
+        self.var = 0
+        self.std = 0
+        self.cov = 0
         self.beta = 0
 
-        try:
-            self.open = np.array(self.frame['Open'])
-        except:
-            self.open = np.array([])
+    def setBenchmark(self, benchmark):
+        column = list(benchmark)
+        self.frame = self.frame.join(benchmark, how='outer')
+        self.frame.dropna(inplace=True)
+        self.frame.rename(columns={column[0]: 'Benchmark'}, inplace=True)
 
-        try:
-            self.close = np.array(self.frame['Close'])
-        except:
-            self.close = np.array([])
-
-        try:
-            self.low = np.array(self.frame['Low'])
-        except:
-            self.low = np.array([])
-
-        try:
-            self.high = np.array(self.frame['High'])
-        except:
-            self.high = np.array([])
-
-        try:
-            self.volume = np.array(self.frame['Volume'])
-        except:
-            self.volume = np.array([])
-
-        self.rend = np.array([])
-        self.std = 0
+    def calcStats(self):
+        self.calcRend()
+        self.calcRisk()
 
     def calcRend(self):
         """
@@ -70,14 +57,17 @@ class tSeries:
 
         :return: Void
         """
-        self.rend = np.diff(self.close) / self.close[:-1]
+        self.rend = self.frame['Close'].pct_change()
+        self.rend.dropna(inplace=True)
+        self.meanRend = self.rend.mean()
 
-    def calcStd(self):
+    def calcRisk(self):
         """
         Fonction qui calcule l'écart-type et insère le résultat dans self.std
 
         :return: Void
         """
+        self.var = self.rend.var()
         self.std = self.rend.std()
 
     def calcBeta(self):
@@ -86,15 +76,17 @@ class tSeries:
 
         :return: Void
         """
-        pass
+        self.cov = self.frame['Benchmark'].cov(self.frame['Close'])
+        self.beta = self.cov / self.frame['Benchmark'].var()
 
 if __name__ == '__main__':
-    test = tSeries(pd.read_csv('aapl.csv'))
-    print(test.frame.head())
-
-    print(test.close)
+    benchmark = pd.read_csv('benchmark.csv')
+    benchmark.set_index('Date', inplace=True)
+    test = tSeries(pd.read_csv('ford.csv'))
+    test.setBenchmark(benchmark)
     test.calcRend()
-    print(test.rend)
-    test.calcStd()
-    print(test.std)
-    print(test.benchmark)
+    test.calcRisk()
+    test.calcBeta()
+    print(test.cov)
+    print(test.beta)
+    print(test.frame.head())
