@@ -23,14 +23,10 @@ class seriesAnalysisMenu():
         self.csvName = ''
         self.csvFile = pd.DataFrame()
         self.benchmark = False
+        self.noRisk = 0.02
         self.seriesList = []
         self.seriesDictionary = {}
         self.corrMatrix = np.array([])
-
-        try:
-            self.loadFromPickle()
-        except:
-            print('new')
 
     def createAnalysisMenu(self):
         """
@@ -39,10 +35,13 @@ class seriesAnalysisMenu():
         :return: createGFinMenu, createBloomMenu, printTest, 0, sys.exit
         """
         print('Fichier en cours: ', self.csvName)
+        print('Taux sans risque: ', self.noRisk)
         print("""
         A-Travailler avec un csv provenant de google finance
         B-Travailler avec un csv provenant de bloomberg
         C-Imprimer Tests
+        D-Modifier taux sans risque
+        E-Voir graphiques
         R-Revenir en arrière
         Q-Quitter
         """)
@@ -56,6 +55,12 @@ class seriesAnalysisMenu():
 
         elif optionMenu == 'C':
             return self.printTest()
+
+        elif optionMenu == 'D':
+            return self.modNoRisk()
+
+        elif optionMenu == 'E':
+            return self.createGraphMenu()
 
         elif optionMenu == 'R':
             return 0
@@ -100,6 +105,45 @@ class seriesAnalysisMenu():
             if optionReady == 'N':
                 return self.createAnalysisMenu()
 
+    def createGraphMenu(self):
+        print("vos tickers: ", self.seriesList)
+        print("""
+        A-Voir un graphique OHLC
+        B-Voir le graphique des corrélations
+        C-Voir le graphique de la frontière efficiente
+        R-Revenir en arrière
+        Q-Quitter
+        """)
+
+        optionGraph = str.upper(input("Quelle option choisissez-vous?"))
+
+        if optionGraph == 'A':
+            return self.ohlcMenu()
+
+        if optionGraph == 'B':
+            return self.showCorrelations()
+
+        if optionGraph == 'C':
+            return self.efficientMenu()
+
+        elif optionGraph == 'R':
+            return 0
+
+        elif optionGraph == 'Q':
+            return sys.exit()
+
+        else:
+            return self.createGraphMenu()
+
+    def ohlcMenu(self):
+        pass
+
+    def showCorrelations(self):
+        pass
+
+    def efficientMenu(self):
+        pass
+
     def format(self):
         """
         Fonction qui va formater le csv pour créer un tSeries pour chaque ticker qu'il contient et lui insérer leur propre DataFrame dans chaque objet
@@ -126,18 +170,18 @@ class seriesAnalysisMenu():
                 print(new_df.head())
             else:
                 self.seriesList.append(ticker2)
-                self.seriesDictionary[ticker2] = tSeries(new_df)
+                self.seriesDictionary[ticker2] = tSeries(new_df, self.noRisk)
                 ticker2 = ticker1
                 new_df = pd.DataFrame(buffer_df)
                 new_df = new_df.join(self.csvFile[item])
                 new_df.rename(columns={item: data}, inplace=True)
 
         self.seriesList.append(ticker2)
-        self.seriesDictionary[ticker2] = tSeries(new_df)
+        self.seriesDictionary[ticker2] = tSeries(new_df, self.noRisk)
 
         for ticker in self.seriesList:
             if self.benchmark:
-                self.seriesDictionary[ticker].benchmark = np.array(self.seriesDictionary[self.seriesList[0]].close)
+                self.seriesDictionary[ticker].setBenchmark(pd.DataFrame(self.seriesDictionary[self.seriesList[0]].frame['Close']))
 
     def calcStats(self):
         """
@@ -147,6 +191,8 @@ class seriesAnalysisMenu():
         """
         for ticker in self.seriesList:
             self.seriesDictionary[ticker].calcStats()
+
+        self.saveToPickle()
 
     def createBloomMenu(self):
         """
@@ -165,15 +211,30 @@ class seriesAnalysisMenu():
 
         :return: self.createAnalysisMenu
         """
+
         for ticker in self.seriesList:
             print(ticker)
-            print('close: ', self.seriesDictionary[ticker].frame.head())
-            print('bench: ', self.seriesDictionary[ticker].benchmark)
+            print(self.seriesDictionary[ticker].frame.head())
             print('Std: ', self.seriesDictionary[ticker].std)
             print('beta: ', self.seriesDictionary[ticker].beta)
 
-        print(self.seriesList)
 
+        return self.createAnalysisMenu()
+
+    def modNoRisk(self):
+        print('Taux sans risque: ', self.noRisk)
+
+        noRisk = ''
+        while noRisk == '':
+            try:
+                noRisk = float(input('Entrez le nouveau taux sans risque (en décimales): '))
+                if noRisk >= 1:
+                    noRisk = ''
+            except:
+                print("Erreur de taux, veuillez entrer un taux sans risque en décimales (exemple: 0.02")
+                noRisk = ''
+
+        self.noRisk = noRisk
         return self.createAnalysisMenu()
 
     def saveToPickle(self):
@@ -183,7 +244,7 @@ class seriesAnalysisMenu():
         :return: Void
         """
         pickle_out = open('seriesAnalysisMenu.pickle', 'wb')
-        pickle.dump(self, pickle_out)
+        pickle.dump(self.seriesDictionary[self.seriesList[1]], pickle_out)
         pickle_out.close()
         print('workspace sauvegardé')
 
