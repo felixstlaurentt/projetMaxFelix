@@ -16,6 +16,8 @@ Attributes:
     high:
     volume:
 """
+
+
 class tSeries:
 
     def __init__(self, frame, noRisk):

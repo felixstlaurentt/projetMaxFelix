@@ -9,7 +9,9 @@ import pandas as pd
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
-
+import numpy as np
+from tSeries import tSeries
+from matplotlib.finance import candlestick_ohlc
 import random
 
 
@@ -18,12 +20,26 @@ class ptfWidget(QWidget):
 
     def __init__(self, parent=None):
         super(ptfWidget, self).__init__(parent)
+        self.csvPath = ''
+        self.csvFile = pd.DataFrame()
+        self.open = False
+        self.close = False
+        self.high = False
+        self.low = False
+        self.volume = False
+        self.benchmark = False
+        self.source = ''
+        self.noRisk = 0.02
+        self.seriesList = []
+        self.seriesDictionary = {}
+        self.corrMatrix = np.array([])
+        self.index = 0
 
         self.setObjectName("Gestion de portefeuille")
-        self.resize(850, 620)
+        self.resize(850, 700)
 
         self.frame = QtWidgets.QFrame(self)
-        self.frame.setGeometry(QtCore.QRect(170, 10, 700, 600))  #631, 581
+        self.frame.setGeometry(QtCore.QRect(170, 10, 750, 750))  #631, 581
         font = QtGui.QFont()
         font.setPointSize(13)
         self.frame.setFont(font)
@@ -111,6 +127,8 @@ class ptfWidget(QWidget):
                                                     " efficiente"))
 
         self.pushButton.clicked.connect(self.openLoadWidget)
+        self.pushButton_2.clicked.connect(self.graph.corrPlot)
+        self.pushButton_3.clicked.connect(self.graph.ohlcPlot)
 
     def openLoadWidget(self):
         """
@@ -120,60 +138,231 @@ class ptfWidget(QWidget):
         """
         load = ptfLoadWidget()
         load.exec()
+        if load.exec():
+            self.csvPath = load.csvPath
+            self.open = load.open
+            self.close = load.close
+            self.high = load.high
+            self.low = load.low
+            self.volume = load.volume
+            self.benchmark = load.benchmark
+            self.noRisk = load.noRisk
+            self.source = load.source
+            self.label_2.setText(self.csvPath.split('/')[-1])
+            self.format()
+            self.calcStats()
+
+    def format(self):
+        """
+        Fonction qui va formater le csv pour créer un tSeries pour chaque ticker qu'il contient et lui insérer leur propre DataFrame dans chaque objet
+
+        :return: Void
+        """
+        self.seriesDictionary = {}
+        self.csvFile = pd.read_csv(self.csvPath.split('/')[-1])
+        buffer_df = pd.DataFrame(self.csvFile['Date'])
+        new_df = pd.DataFrame(buffer_df)
+        new_df.set_index('Date', inplace=True)
+        self.csvFile.set_index('Date', inplace=True)
+
+        liste = list(self.csvFile)
+        ticker2 = liste[0].split('_')[0]
+
+        for item in liste:
+            ticker1 = item.split('_')[0]
+            data = item.split('_')[1]
+
+            if ticker1 == ticker2:
+                buffer_item = pd.DataFrame(self.csvFile[item])
+                new_df = new_df.join(buffer_item, how='outer')
+                new_df.rename(columns={item: data}, inplace=True)
+                print(new_df.head())
+            else:
+                self.seriesList.append(ticker2)
+                self.seriesDictionary[ticker2] = tSeries(new_df, self.noRisk)
+                ticker2 = ticker1
+                new_df = pd.DataFrame(buffer_df)
+                new_df = new_df.join(self.csvFile[item])
+                new_df.rename(columns={item: data}, inplace=True)
+
+        self.seriesList.append(ticker2)
+        self.seriesDictionary[ticker2] = tSeries(new_df, self.noRisk)
+
+        for ticker in self.seriesList:
+            if self.benchmark:
+                self.seriesDictionary[ticker].setBenchmark(pd.DataFrame(self.seriesDictionary[self.seriesList[0]].frame['Close']))
+
+        self.graph.liste = self.seriesList
+        self.graph.dict = self.seriesDictionary
+        self.graph.ohlcPlot()
+
+    def calcStats(self):
+        """
+        Fonction qui calcules les statistiques de chaque ticker et ceux du portfolio
+
+        :return: Void
+        """
+        for ticker in self.seriesList:
+            self.seriesDictionary[ticker].calcStats()
+
+        self.saveToPickle()
+
+    def saveToPickle(self):
+        """
+        Fonction qui sauvegarde l'objet seriesAnalysisMenu en entier. Ce qui sauvegarde toutes les données même si l'on ferme le programme
+
+        :return: Void
+        """
+        pickle_out = open('ptfWidget_seriesList.pickle', 'wb')
+        pickle.dump(self.seriesList, pickle_out)
+        pickle_out.close()
+        pickle_out = open('ptfWidget_seriesDictionary.pickle', 'wb')
+        pickle.dump(self.seriesDictionary, pickle_out)
+        pickle_out.close()
+
+        print('workspace sauvegardé')
+    #
+    # def loadFromPickle(self):
+    #     """
+    #     Fonction qui remet en place l'objet seriesAnalysisMenu à l'état ou il se trouvait à la dernière sauvegarde
+    #
+    #     :return: Void
+    #     """
+    #     pickle_in = open('seriesAnalysisMenu.pickle', 'rb')
+    #     buffer = pickle.load(pickle_in)
+    #     self.csvName = buffer.csvName
+    #     self.csvFile = buffer.csvFile
+    #     self.benchmark = buffer.benchMark
+    #     self.seriesList = buffer.seriesList
+    #     self.seriesDictionary = buffer.seriesDictionary
+    #     self.corrMatrix = buffer.corrMatrix
 
 
 class ptfGraphWidget(QWidget):
     def __init__(self, parent=None):
         super(ptfGraphWidget, self).__init__(parent)
 
-        # a figure instance to plot on
+        self.liste = []
+        self.dict = {}
+        self.index = 0
+
         self.figure = plt.figure()
 
-        # this is the Canvas Widget that displays the `figure`
-        # it takes the `figure` instance as a parameter to __init__
         self.canvas = FigureCanvas(self.figure)
 
-        # this is the Navigation widget
-        # it takes the Canvas widget and a parent
         self.toolbar = NavigationToolbar(self.canvas, self)
 
-        # Just some button connected to `plot` method
-        self.button = QPushButton('Plot')
-        self.button.clicked.connect(self.plot)
+        self.buttonPrevious = QPushButton('Previous')
+        self.buttonNext = QPushButton('Next')
 
-        # set the layout
         layout = QVBoxLayout()
         layout.addWidget(self.toolbar)
         layout.addWidget(self.canvas)
-        layout.addWidget(self.button)
+        layout.addWidget(self.buttonPrevious)
+        layout.addWidget(self.buttonNext)
         self.setLayout(layout)
 
-    def plot(self):
-        ''' plot some random stuff '''
-        # random data
-        data = [random.random() for i in range(10)]
+        self.buttonPrevious.clicked.connect(self.previous)
+        self.buttonNext.clicked.connect(self.next)
 
-        # instead of ax.hold(False)
+        self.ohlcPlot()
+
+    def next(self):
+        if self.index == len(self.liste) - 1:
+            self.index = 0
+        else:
+            self.index += 1
+        self.ohlcPlot()
+
+    def previous(self):
+        if self.index == 0:
+            self.index = len(self.liste) - 1
+        else:
+            self.index -= 1
+        self.ohlcPlot()
+
+    def ohlcPlot(self):
+
         self.figure.clear()
 
-        # create an axis
-        ax = self.figure.add_subplot(111)
+        if len(self.liste) != 0:
+            frame = pd.DataFrame(self.dict[self.liste[self.index]].frame)
+            frame.reset_index(inplace=True)
+            date = frame['Date']
+            open = frame['Open']
+            close = frame['Close']
+            high = frame['High']
+            low = frame['Low']
+            volume = frame['Volume']
+        else:
+            return 0
 
-        # discards the old graph
-        # ax.hold(False) # deprecated, see above
+        new_date = list(range(1, len(close)+1))
 
-        # plot data
-        ax.plot(data, '*-')
+        i = 0
+        ohlc_data = []
+        while i < len(new_date):
+            stats_1_day = new_date[i], open[i], high[i], low[i], close[i]
+            ohlc_data.append(stats_1_day)
+            i += 1
+
+        ax1 = plt.subplot2grid((6, 1), (0, 0), rowspan=4, colspan=1)
+        plt.title(self.liste[self.index])
+        candlestick_ohlc(ax1, ohlc_data, colorup='g', colordown='r')
+
+        ax2 = plt.subplot2grid((6, 1), (4, 0), rowspan=2, colspan=1, sharex=ax1)
+        ax2.bar(new_date, volume, 0.5, color='g')
 
         # refresh canvas
         self.canvas.draw()
 
+    def corrPlot(self):
+
+        pass
+        self.figure.clear()
+
+        df_corr = pd.DataFrame()
+        for item in self.liste:
+            rend = pd.DataFrame(self.dict[item].rend)
+            rend.rename(columns={'Close': item}, inplace=True)
+            if df_corr.empty:
+                df_corr = pd.DataFrame(rend)
+            else:
+                df_corr = df_corr.join(rend, how='outer')
+        df_corr = df_corr.corr()
+        data1 = df_corr.values
+
+        ax1 = self.figure.add_subplot(111)
+        heatmap1 = ax1.pcolor(data1, cmap=plt.cm.RdYlGn)
+        self.figure.colorbar(heatmap1)
+
+        ax1.set_xticks(np.arange(data1.shape[1]) + 0.5, minor=False)
+        ax1.set_yticks(np.arange(data1.shape[0]) + 0.5, minor=False)
+        ax1.invert_yaxis()
+        ax1.xaxis.tick_top()
+        column_labels = df_corr.columns
+        row_labels = df_corr.index
+        ax1.set_xticklabels(column_labels)
+        ax1.set_yticklabels(row_labels)
+        plt.xticks(rotation=90)
+        heatmap1.set_clim(-1, 1)
+        plt.tight_layout()
+
+        self.canvas.draw()
 
 class ptfLoadWidget(QDialog):
 
     def __init__(self, parent=None):
         super(ptfLoadWidget, self).__init__(parent)
-
+        self.csvPath = ''
+        self.source = 'google'
+        self.open = False
+        self.close = False
+        self.high = False
+        self.low = False
+        self.volume = False
+        self.noRisk = 0.02
+        self.benchmark = False
         self.setObjectName("Dialog")
         self.resize(640, 462)
         font = QtGui.QFont()
@@ -322,6 +511,11 @@ class ptfLoadWidget(QDialog):
         self.lineEdit.setObjectName("lineEdit")
         self.horizontalLayout_5.addWidget(self.lineEdit)
 
+        self.pushButton = QtWidgets.QPushButton(self.horizontalLayoutWidget_5)
+        self.pushButton.setFont(font)
+        self.pushButton.setObjectName("BrowseFile")
+        self.horizontalLayout_5.addWidget(self.pushButton)
+
         spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_5.addItem(spacerItem2)
 
@@ -342,11 +536,41 @@ class ptfLoadWidget(QDialog):
         self.radioButton_4.setText(_translate("Dialog", "Oui"))
         self.radioButton_5.setText(_translate("Dialog", "Non"))
         self.label_5.setText(_translate("Dialog", "Entrez le nom du fichier csv:    "))
+        self.pushButton.setText(_translate("Dialog", "Chercher fichier"))
 
-        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.accepted.connect(self.acceptDialog)
         self.buttonBox.rejected.connect(self.reject)
+        self.pushButton.clicked.connect(self.browseFile)
         QtCore.QMetaObject.connectSlotsByName(self)
 
+    def browseFile(self):
+        path = QtWidgets.QFileDialog.getOpenFileName()
+        self.lineEdit.setText(path[0])
+
+    def acceptDialog(self):
+        self.csvPath = self.lineEdit.text()
+
+        if self.radioButton_3.isChecked():
+            self.source = 'google'
+        elif self.radioButton_2.isChecked():
+            self.source = 'quandl'
+        elif self.radioButton.isChecked():
+            self.source = 'bloomberg'
+
+        if self.checkBox_2.isChecked():
+            self.open = True
+        if self.checkBox.isChecked():
+            self.close = True
+        if self.checkBox_3.isChecked():
+            self.high = True
+        if self.checkBox_4.isChecked():
+            self.low = True
+        if self.checkBox_5.isChecked():
+            self.volume = True
+        self.noRisk = self.doubleSpinBox.value()
+        if self.radioButton_4.isChecked():
+            self.benchmark = True
+        self.accept()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
