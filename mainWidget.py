@@ -18,13 +18,13 @@ class mainWidget(QMainWindow):
         self.centralwidget.setObjectName("centralwidget")
 
         self.frame = QtWidgets.QFrame(self.centralwidget)
-        self.frame.setGeometry(QtCore.QRect(170, 0, 1101, 851))
+        self.frame.setGeometry(QtCore.QRect(170, 0, 1400, 800))
         self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame.setObjectName("frame")
 
         self.stackedWidget = QtWidgets.QStackedWidget(self.frame)
-        self.stackedWidget.setGeometry(QtCore.QRect(0, 0, 1101, 851))
+        self.stackedWidget.setGeometry(QtCore.QRect(0, 0, 1400, 800))
         self.stackedWidget.setObjectName("stackedWidget")
 
         self.page_1 = QtWidgets.QWidget()

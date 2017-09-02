@@ -3,65 +3,34 @@ import pandas as pd
 import pandas_datareader.data as web
 import matplotlib.pyplot as plt
 import pickle
-from matplotlib import style
+from matplotlib import style, dates
+from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5.QtWidgets import QApplication
+import sys
+import datetime as dt
 
 
 style.use('ggplot')
 
-pickle_in = open('ptfWidget_seriesList.pickle', 'rb')
-liste = pickle.load(pickle_in)
-pickle_in = open('ptfWidget_seriesDictionary.pickle', 'rb')
-dict = pickle.load(pickle_in)
+# pickle_in = open('ptfWidget_seriesList.pickle', 'rb')
+# liste = pickle.load(pickle_in)
+# pickle_in = open('ptfWidget_seriesDictionary.pickle', 'rb')
+# dict = pickle.load(pickle_in)
 
+csvFile = pd.read_csv('nasdaq.csv')
 
-df_rend = pd.DataFrame()
-for item in liste[1:]:
-    rend = pd.DataFrame(dict[item].rend)
-    rend.rename(columns={'Close': item}, inplace=True)
-    if df_rend.empty:
-        df_rend = pd.DataFrame(rend)
-    else:
-        df_rend = df_rend.join(rend, how='outer')
+csvFile.set_index('Date', inplace=True)
+csvFile = pd.DataFrame(csvFile['SPY_Open'])
+# csvFile.reset_index(inplace=True)
 
-mean = df_rend.mean()
-cov = df_rend.cov()
+# new_dates = []
+# for date in csvFile['Date']:
+#     annee, mois, jour = date.split('-')
+#     new_date = dt.datetime(int(annee), int(mois), int(jour))
+#     new_dates.append(new_date)
 
-num_port = 25000
-
-results = np.zeros((4 + len(liste) - 2, num_port))
-
-for i in range(num_port):
-    weights = np.random.random(len(liste)-1)
-    weights /= np.sum(weights)
-
-    port_return = np.sum(mean * weights) * 252
-    port_std = np.sqrt(np.dot(weights.T, np.dot(cov, weights))) * np.sqrt(252)
-
-    results[0, i] = port_return
-    results[1, i] = port_std
-    results[2, i] = port_return / port_std
-
-    for j in range(len(weights)):
-        results[j + 3, i] = weights[j]
-
-columns_name = ['Returns', 'Std_Dev', 'Sharpe']
-for i in liste[1:]:
-    columns_name.append(i)
-
-results_frame = pd.DataFrame(results.T, columns=columns_name)
-print(results_frame.head())
-
-max_sharpe = results_frame.iloc[results_frame['Sharpe'].idxmax()]
-min_var = results_frame.iloc[results_frame['Std_Dev'].idxmin()]
-
-print(max_sharpe)
-print(min_var)
-
-plt.scatter(results_frame.Std_Dev, results_frame.Returns, c=results_frame.Sharpe, cmap='RdYlBu')
-plt.xlabel('Volatility')
-plt.ylabel('Returns')
-plt.colorbar()
-plt.scatter(max_sharpe[1], max_sharpe[0], marker=(5, 1, 0), color='r', s=250)
-plt.scatter(min_var[1], min_var[0], marker=(5, 1, 0), color='g', s=250)
-plt.show()
-
+# new_frame = pd.DataFrame(new_dates, columns=['Date'])
+# new_frame = new_frame.join(csvFile['SPY_Open'])
+# new_frame.set_index('Date')
+csvFile.resample('M').mean()
+print(csvFile)

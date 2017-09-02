@@ -18,7 +18,7 @@ class importWidget(QWidget):
         self.loadMenu()
 
         self.setObjectName("Importation de données")
-        self.resize(800, 600)
+        self.resize(1400, 800)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -29,7 +29,7 @@ class importWidget(QWidget):
         self.setFont(font)
 
         self.tabWidget = QtWidgets.QTabWidget(self)
-        self.tabWidget.setGeometry(QtCore.QRect(10, 10, 780, 580))
+        self.tabWidget.setGeometry(QtCore.QRect(10, 10, 1400, 800))
         self.tabWidget.setObjectName("tabWidget")
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")

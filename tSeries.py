@@ -2,6 +2,7 @@ import pandas as pd
 import datetime as dt
 import pickle
 import numpy as np
+from math import sqrt
 
 """
 Classe qui contient les statistiques de chaque ticker
@@ -44,6 +45,7 @@ class tSeries:
         self.std = 0
         self.cov = 0
         self.beta = 0
+        self.capm = 0
 
         self.treynor = 0
         self.sharpe = 0
@@ -103,19 +105,15 @@ class tSeries:
 
         :return: Void
         """
-        benchmarkRend = pd.DataFrame(self.frame['Benchmark'].pct_change())
+        benchmarkRend = self.frame['Benchmark'].pct_change()
         benchmarkRend.dropna(inplace=True)
         benchmarkMean = benchmarkRend.mean()
         benchmarkStd = benchmarkRend.std()
 
-        self.sharpe = (self.meanRend - benchmarkMean) / self.std
-
-        self.treynor = (self.meanRend - benchmarkMean) / self.beta
-
-        self.alpha = self.meanRend - (self.noRisk + self.beta * (benchmarkMean - self.noRisk))
-
-        self.mSquare = self.noRisk + ((self.meanRend - self.noRisk) / self.std) * benchmarkStd
-
+        self.sharpe = ((self.meanRend * 252) - self.noRisk) / (self.std * sqrt(252))
+        self.treynor = ((self.meanRend * 252) - self.noRisk) / self.beta
+        self.alpha = (self.meanRend * 252) - (self.noRisk + self.beta * ((benchmarkMean * 252) - self.noRisk))
+        self.mSquare = self.noRisk + (((self.meanRend * 252) - self.noRisk) / self.std) * (benchmarkStd * sqrt(252))
 
 if __name__ == '__main__':
     benchmark = pd.read_csv('benchmark.csv')
