@@ -32,5 +32,6 @@ csvFile = pd.DataFrame(csvFile['SPY_Open'])
 # new_frame = pd.DataFrame(new_dates, columns=['Date'])
 # new_frame = new_frame.join(csvFile['SPY_Open'])
 # new_frame.set_index('Date')
-csvFile.resample('M').mean()
-print(csvFile)
+
+date = dt.datetime.today()
+print(type(date.year))

@@ -7,6 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+import datetime as dt
 import sys
 
 
@@ -20,6 +21,9 @@ class derivativesWidget(QtWidgets.QWidget):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.setFont(font)
+
+        self.optionTypes = ['Call Européen', 'Put Européen']
+        self.underlying = ['Action', 'Indice', 'Devise']
 
         """
         MENU GAUCHE
@@ -80,6 +84,8 @@ class derivativesWidget(QtWidgets.QWidget):
         self.horizontalLayout.addWidget(self.comboBox)
         self.verticalLayout_2.addLayout(self.horizontalLayout)
 
+        self.comboBox.addItems(self.optionTypes)
+
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.label_2 = QtWidgets.QLabel(self.verticalLayoutWidget_2)
@@ -90,6 +96,8 @@ class derivativesWidget(QtWidgets.QWidget):
         self.horizontalLayout_2.addWidget(self.comboBox_2)
         self.verticalLayout_2.addLayout(self.horizontalLayout_2)
 
+        self.comboBox_2.addItems(self.underlying)
+
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.label_3 = QtWidgets.QLabel(self.verticalLayoutWidget_2)
@@ -97,6 +105,7 @@ class derivativesWidget(QtWidgets.QWidget):
         self.horizontalLayout_3.addWidget(self.label_3)
         self.dateEdit = QtWidgets.QDateEdit(self.verticalLayoutWidget_2)
         self.dateEdit.setObjectName("dateEdit")
+        self.dateEdit.setDate(dt.datetime.today())
         self.horizontalLayout_3.addWidget(self.dateEdit)
         self.verticalLayout_2.addLayout(self.horizontalLayout_3)
 
@@ -545,7 +554,7 @@ class derivativesWidget(QtWidgets.QWidget):
         self.label_25.setText(_translate("Form", "Prix du sous-jacent"))
         self.label_26.setText(_translate("Form", "Strike"))
         self.label_27.setText(_translate("Form", "Coût"))
-        self.pushButton_5.setText(_translate("Form", "Sauvegarder"))
+        self.pushButton_5.setText(_translate("Form", "Ajouter"))
         self.pushButton_6.setText(_translate("Form", "Supprimer"))
 
         self.pushButton.clicked.connect(self.openCalculator)

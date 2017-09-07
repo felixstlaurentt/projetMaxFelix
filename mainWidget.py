@@ -5,6 +5,7 @@ import time
 import pickle
 from importWidget import importWidget
 from ptfWidget import ptfWidget
+from derivativesWidget import derivativesWidget
 
 
 class mainWidget(QMainWindow):
@@ -46,6 +47,8 @@ class mainWidget(QMainWindow):
         self.page_4 = QtWidgets.QWidget()
         self.page_4.setObjectName("page_4")
         self.stackedWidget.addWidget(self.page_4)
+
+        self.derivativesWidget = derivativesWidget(self.page_4)
 
         self.page_5 = QtWidgets.QWidget()
         self.page_5.setObjectName("page_5")
@@ -157,12 +160,16 @@ class mainWidget(QMainWindow):
 
         self.pushButton.clicked.connect(self.importOpen)
         self.pushButton_2.clicked.connect(self.ptfOpen)
+        self.pushButton_4.clicked.connect(self.derivativesOpen)
 
     def importOpen(self):
         self.stackedWidget.setCurrentIndex(0)
 
     def ptfOpen(self):
         self.stackedWidget.setCurrentIndex(1)
+
+    def derivativesOpen(self):
+        self.stackedWidget.setCurrentIndex(3)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
